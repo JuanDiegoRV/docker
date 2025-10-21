@@ -1,57 +1,37 @@
+version: '3.8'
+
 services:
-  sirha-backend:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        - BUILD_DATE=${BUILD_DATE:-$(date -u +'%Y-%m-%dT%H:%M:%SZ')}
-        - VERSION=${VERSION:-latest}
-    image: sirha-backend:${VERSION:-latest}
-    container_name: sirha-backend
+  mongodb:
+    image: mongo:7.0
+    container_name: sirha-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: sirha
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - sirha-network
+
+  app:
+    image: ghcr.io/${GITHUB_REPOSITORY}:latest
+    container_name: sirha-app
+    restart: unless-stopped
     ports:
       - "8080:8080"
-    env_file:
-      - .env
     environment:
-      # Spring Configuration
-      SPRING_PROFILES_ACTIVE: "prod"
-      SPRING_DATA_MONGODB_URI: "${SPRING_DATA_MONGODB_URI}"
-      
-      # Management endpoints
-      MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS: "ALWAYS"
-      MANAGEMENT_HEALTH_MONGO_ENABLED: "true"
-      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "health,info,metrics"
-      
-      # Swagger/OpenAPI Configuration
-      SPRINGDOC_SWAGGER_UI_PATH: "/swagger-ui.html"
-      SPRINGDOC_API_DOCS_PATH: "/v3/api-docs"
-      SPRINGDOC_SWAGGER_UI_OPERATIONS_SORTER: "method"
-      
-      # Logging Configuration
-      LOGGING_LEVEL_ROOT: "INFO"
-      LOGGING_LEVEL_EDU_DOSW_SIRHA: "DEBUG"
-      LOGGING_FILE_NAME: "logs/sirha-app.log"
-      
-      # JVM Configuration
-      JAVA_OPTS: "-Xmx512m -Xms256m -XX:+UseG1GC"
-      
-      # Timezone
-      TZ: "UTC"
-    volumes:
-      - sirha-logs:/app/logs
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
+      SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/sirha
+      SPRING_PROFILES_ACTIVE: prod
+    depends_on:
+      - mongodb
     networks:
       - sirha-network
 
 volumes:
-  sirha-logs:
-    driver: local
+  mongodb_data:
 
 networks:
   sirha-network:
