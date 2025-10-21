@@ -1,9 +1,44 @@
-target
+# Git
 .git
 .gitignore
+.github
+
+# Documentation
 README.md
-docs
+DOCKER.md
+docs/
+
+# IDE files
+.idea/
+.vscode/
 *.iml
+*.ipr
+*.iws
+
+# Maven
+target/
+.m2/
+
+# Logs
 *.log
-.vscode
-.idea
+logs/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Scripts
+scripts/
+
+# Test files
+src/test/
+
+# Docker files
+Dockerfile*
+docker-compose*.yml
+.dockerignore
