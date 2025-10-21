@@ -7,10 +7,10 @@ services:
     ports:
       - "8080:8080"
     env_file:
-      - .env
+      - .env  # Esto cargará automáticamente tu SPRING_DATA_MONGODB_URI
     environment:
       SPRING_PROFILES_ACTIVE: "prod"
-      SPRING_DATA_MONGODB_URI: "${SPRING_DATA_MONGODB_URI}"
+      # NO definir SPRING_DATA_MONGODB_URI aquí, que lo tome del .env
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/actuator/health"]
       interval: 20s
