@@ -1,19 +1,58 @@
-version: "3.9"
 services:
   sirha-backend:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        - BUILD_DATE=${BUILD_DATE:-$(date -u +'%Y-%m-%dT%H:%M:%SZ')}
+        - VERSION=${VERSION:-latest}
+    image: sirha-backend:${VERSION:-latest}
+    container_name: sirha-backend
     ports:
       - "8080:8080"
     env_file:
-      - .env  # Esto cargará automáticamente tu SPRING_DATA_MONGODB_URI
+      - .env
     environment:
+      # Spring Configuration
       SPRING_PROFILES_ACTIVE: "prod"
-      # NO definir SPRING_DATA_MONGODB_URI aquí, que lo tome del .env
+      SPRING_DATA_MONGODB_URI: "${SPRING_DATA_MONGODB_URI}"
+      
+      # Management endpoints
+      MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS: "ALWAYS"
+      MANAGEMENT_HEALTH_MONGO_ENABLED: "true"
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "health,info,metrics"
+      
+      # Swagger/OpenAPI Configuration
+      SPRINGDOC_SWAGGER_UI_PATH: "/swagger-ui.html"
+      SPRINGDOC_API_DOCS_PATH: "/v3/api-docs"
+      SPRINGDOC_SWAGGER_UI_OPERATIONS_SORTER: "method"
+      
+      # Logging Configuration
+      LOGGING_LEVEL_ROOT: "INFO"
+      LOGGING_LEVEL_EDU_DOSW_SIRHA: "DEBUG"
+      LOGGING_FILE_NAME: "logs/sirha-app.log"
+      
+      # JVM Configuration
+      JAVA_OPTS: "-Xmx512m -Xms256m -XX:+UseG1GC"
+      
+      # Timezone
+      TZ: "UTC"
+    volumes:
+      - sirha-logs:/app/logs
+    restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/actuator/health"]
-      interval: 20s
-      timeout: 3s
-      retries: 5
-      start_period: 40s
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - sirha-network
+
+volumes:
+  sirha-logs:
+    driver: local
+
+networks:
+  sirha-network:
+    driver: bridge
