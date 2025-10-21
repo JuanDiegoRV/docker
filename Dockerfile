@@ -49,7 +49,12 @@ EXPOSE 8080
 ENV JAVA_OPTS="-Xmx512m -Xms256m -XX:+UseG1GC -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0" \
     SPRING_PROFILES_ACTIVE=prod \
     TZ=UTC \
-    JAVA_TOOL_OPTIONS="-XX:+ExitOnOutOfMemoryError"
+    SPRING_DATA_MONGODB_URI=mongodb://mongodb:27017/sirha \
+    SPRING_DATA_MONGODB_AUTO_INDEX_CREATION=true \
+    SPRING_DATA_MONGODB_AUTO_INDEX_CREATION=true \
+    SPRING_DATA_MONGODB_HOST=mongodb \
+    SPRING_DATA_MONGODB_PORT=27017 \
+    SPRING_DATA_MONGODB_DATABASE=sirha
 
 # Healthcheck mejorado
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
